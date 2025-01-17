@@ -3,10 +3,11 @@ from Entities.get_files import FilesPath
 from Entities.dependencies.arguments import Arguments
 import os
 from Entities.dependencies.functions import P
+from getpass import getuser
 
 class Execute:
-    converFile_path = r"C:\Users\renan.oliveira\PATRIMAR ENGENHARIA S A\RPA - Documentos\RPA - Dados\Relatorios\Insumos de Obras - Qualidade\Materiais Aplicados - Conversão.xlsx"
-    finalFile_path = r"C:\Users\renan.oliveira\PATRIMAR ENGENHARIA S A\RPA - Documentos\RPA - Dados\Relatorios\Insumos de Obras - Qualidade"
+    converFile_path = f"C:\\Users\\{getuser()}\\PATRIMAR ENGENHARIA S A\\RPA - Documentos\\RPA - Dados\\Relatorios\\Insumos de Obras - Qualidade\\Materiais Aplicados - Conversão.xlsx"
+    finalFile_path = f"C:\\Users\\{getuser()}\\PATRIMAR ENGENHARIA S A\\RPA - Documentos\\RPA - Dados\\Relatorios\\Insumos de Obras - Qualidade"
     
     @staticmethod
     def start():
