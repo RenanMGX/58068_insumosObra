@@ -17,7 +17,7 @@ class Execute:
         dfs = TratarDados.preprar(lista=FilesPath.get(), tabela_base=Execute.converFile_path)
         
         df = pd.concat(dfs)
-        
+        df = df.drop_duplicates()
         df.to_excel(os.path.join(Execute.finalFile_path, "Relatorio_Final.xlsx"), index=False)
         
         print(P("Concluido!"))
