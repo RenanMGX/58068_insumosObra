@@ -1,1 +1,1 @@
-PROJECT_NAME:str = "Relatorio de Custos - Controle de Obra"
+PROJECT_NAME:str = "Insumos de Obras - Qualidade"

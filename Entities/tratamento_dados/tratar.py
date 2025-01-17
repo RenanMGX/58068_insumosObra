@@ -12,9 +12,21 @@ import traceback
 multiprocessing.freeze_support()
 locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
-valid_sheets:List[str] = ['Base de Dados', 'Despesas']
+valid_sheets:List[str] = ['Base de Dados']
 count:int = 0
+
 def __conversor(row:pd.Series, df_medidas:pd.DataFrame, finalidade:str):
+    """
+    Converte uma linha do DataFrame de acordo com as medidas e finalidade fornecidas.
+    
+    Args:
+        row (pd.Series): Linha do DataFrame original.
+        df_medidas (pd.DataFrame): DataFrame contendo as medidas de conversão.
+        finalidade (str): Finalidade da conversão ('FINALIDADE 1' ou 'FINALIDADE 2').
+    
+    Returns:
+        pd.Series: Nova linha convertida ou uma série vazia se a conversão não for possível.
+    """
     fina = ""
     if finalidade == 'FINALIDADE 2':
         fina = ".1"
@@ -44,6 +56,17 @@ def __conversor(row:pd.Series, df_medidas:pd.DataFrame, finalidade:str):
     return pd.Series()
 
 def __create_climas(q:multiprocessing.Queue, df:pd.DataFrame, df_convert:pd.DataFrame):
+    """
+    Cria o DataFrame de climas aplicando a função de conversão e agrupando os resultados.
+    
+    Args:
+        q (multiprocessing.Queue): Fila para colocar o resultado.
+        df (pd.DataFrame): DataFrame original.
+        df_convert (pd.DataFrame): DataFrame contendo as medidas de conversão.
+    
+    Returns:
+        None
+    """
     try:
         climas = df.apply(__conversor, axis=1, args=(df_convert,'FINALIDADE 1')).dropna(subset=['MÊS']).astype({'MÊS':str,'ANO':int})
         climas = climas.groupby(['MÊS', 'ANO', 'CENTRO', 'TEXTO', 'PARÂMETRO', 'UM', 'FINALIDADE'], as_index=False).sum()
@@ -52,6 +75,17 @@ def __create_climas(q:multiprocessing.Queue, df:pd.DataFrame, df_convert:pd.Data
         return q.put(e)
 
 def __create_relatorios(q:multiprocessing.Queue, df:pd.DataFrame, df_convert:pd.DataFrame):
+    """
+    Cria o DataFrame de relatórios aplicando a função de conversão e agrupando os resultados.
+    
+    Args:
+        q (multiprocessing.Queue): Fila para colocar o resultado.
+        df (pd.DataFrame): DataFrame original.
+        df_convert (pd.DataFrame): DataFrame contendo as medidas de conversão.
+    
+    Returns:
+        None
+    """
     try:
         relatorios = df.apply(__conversor, axis=1, args=(df_convert,'FINALIDADE 2')).dropna(subset=['MÊS']).astype({'MÊS':str,'ANO':int})
         relatorios = relatorios.groupby(['MÊS', 'ANO', 'CENTRO', 'TEXTO', 'PARÂMETRO', 'UM', 'FINALIDADE'], as_index=False).sum()
@@ -60,6 +94,16 @@ def __create_relatorios(q:multiprocessing.Queue, df:pd.DataFrame, df_convert:pd.
         return q.put(e)
 
 def __exec(base_file, file):
+    """
+    Executa o processo de leitura, conversão e agrupamento dos dados.
+    
+    Args:
+        base_file (str): Caminho para o arquivo base contendo as medidas de conversão.
+        file (str): Caminho para o arquivo de dados a ser processado.
+    
+    Returns:
+        dict: Dicionário contendo os DataFrames resultantes ou erros encontrados.
+    """
     wb = openpyxl.load_workbook(file)
     selected_sheet:str = ""
     for sheet in wb.sheetnames:
@@ -82,6 +126,8 @@ def __exec(base_file, file):
     
     q_climas = multiprocessing.Queue()
     q_relatorios = multiprocessing.Queue()
+    
+    # Inicia processos para criar climas e relatórios
     multiprocessing.Process(target=__create_climas, args=(q_climas, df, df_convert)).start()
     multiprocessing.Process(target=__create_relatorios, args=(q_relatorios, df, df_convert)).start()
     
@@ -90,6 +136,8 @@ def __exec(base_file, file):
     }
     
     df_final = pd.DataFrame()
+    
+    # Obtém resultados dos processos
     if isinstance(climas:=q_climas.get(), pd.DataFrame):
         df_final = pd.concat([df_final, climas])
     else:
@@ -107,4 +155,15 @@ def __exec(base_file, file):
     return result
 
 def tratar(queue:multiprocessing.Queue, base_file, file):
+    """
+    Função principal para tratar os dados, colocando o resultado na fila fornecida.
+    
+    Args:
+        queue (multiprocessing.Queue): Fila para colocar o resultado.
+        base_file (str): Caminho para o arquivo base contendo as medidas de conversão.
+        file (str): Caminho para o arquivo de dados a ser processado.
+    
+    Returns:
+        None
+    """
     return queue.put(__exec(base_file, file))
