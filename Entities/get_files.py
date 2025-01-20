@@ -29,13 +29,30 @@ class FilesPath:
                     file = os.path.join(path, file)
                     if os.path.isfile(file):
                         if file.endswith(('.xlsx','.xls', 'xlsm')):
-                            result.append(file)
+                            if not os.path.basename(file).startswith("~$"):
+                                result.append(file)
                 return result
             
             # Adiciona arquivos dos diretórios "patrimar" e "novolar"
             return add_files("patrimar") + add_files("novolar")
         return []
+    
+    @staticmethod
+    def get_covertFile(path:str=os.path.normpath(os.path.join(os.getcwd(), "insumosObras/arquivos/convert"))):        
+        for file in os.listdir(path):
+            file = os.path.join(path, file)
+            if os.path.isfile(file):
+                if file.endswith(('.xlsx','.xls', 'xlsm')):
+                    return os.path.normpath(file)
+        raise FileNotFoundError(f"Arquivo de conversão não encontrado em {path}!")
+    
+    @staticmethod
+    def get_finalFile_path() -> str:
+        path = os.path.normpath(os.path.join(os.getcwd(), "insumosObras/arquivos/final"))
+        if not os.path.exists(path):
+            os.mkdir(path)
+        return path
         
 if __name__ == "__main__":
     # Exemplo de uso da classe FilesPath
-    print(FilesPath.get())
+    print(FilesPath.get_finalFile_path())

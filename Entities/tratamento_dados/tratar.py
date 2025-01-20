@@ -44,7 +44,8 @@ def __conversor(row:pd.Series, df_medidas:pd.DataFrame, finalidade:str):
         new_row['TEXTO'] = texto
         new_row['PARÂMETRO'] = result['PARÂMETRO'].values[0]
         if (result[finalidade].values[0] != '-'):
-            if (fator:=result['FATOR DE CONVERSÃO'+fina].values[0]) and (isinstance(result['FATOR DE CONVERSÃO'+fina].values[0], (int, float)) and (str(result['FATOR DE CONVERSÃO'+fina].values[0]) != "nan")):                new_row['QNTD. TOTAL'] = (row['Qtd.total entrada'] * fator)
+            if (fator:=result['FATOR DE CONVERSÃO'+fina].values[0]) and (isinstance(result['FATOR DE CONVERSÃO'+fina].values[0], (int, float)) and (str(result['FATOR DE CONVERSÃO'+fina].values[0]) != "nan")): 
+                new_row['QNTD. TOTAL'] = (round(row['Qtd.total entrada'], 4) * fator)
             else:
                 new_row['QNTD. TOTAL'] = "?"
             
@@ -70,6 +71,7 @@ def __create_climas(q:multiprocessing.Queue, df:pd.DataFrame, df_convert:pd.Data
     try:
         climas = df.apply(__conversor, axis=1, args=(df_convert,'FINALIDADE 1')).dropna(subset=['MÊS']).astype({'MÊS':str,'ANO':int})
         climas = climas.groupby(['MÊS', 'ANO', 'CENTRO', 'TEXTO', 'PARÂMETRO', 'UM', 'FINALIDADE'], as_index=False).sum()
+        
         return q.put(climas)
     except Exception as e:
         return q.put(e)
@@ -104,6 +106,7 @@ def __exec(base_file, file):
     Returns:
         dict: Dicionário contendo os DataFrames resultantes ou erros encontrados.
     """
+    
     wb = openpyxl.load_workbook(file)
     selected_sheet:str = ""
     for sheet in wb.sheetnames:
@@ -119,22 +122,30 @@ def __exec(base_file, file):
         return exceptions.SheetNotFoundError(f"a sheet {sheet_convert} não foi encontrada na planilha de conversão!")
     
     df = pd.read_excel(file, sheet_name=selected_sheet)
-    df = df[
-        (df['estornado'] != 'X') &
-        (df['Documento de estorno'] != 'X')
-    ]
+    # df = df[
+    #     (df['estornado'] != 'X') &
+    #     (df['Documento de estorno'] != 'X')
+    # ]
+    
+    df['abs_Qtd.total entrada'] = df['Qtd.total entrada'].abs()
+    duplicates = df.duplicated(subset=['abs_Qtd.total entrada', 'Número da Nota Fiscal', 'Texto do pedido', 'Elemento PEP', 'Fornecedor'], keep=False)
+    df = df[~duplicates]
     
     q_climas = multiprocessing.Queue()
     q_relatorios = multiprocessing.Queue()
     
     # Inicia processos para criar climas e relatórios
-    multiprocessing.Process(target=__create_climas, args=(q_climas, df, df_convert)).start()
-    multiprocessing.Process(target=__create_relatorios, args=(q_relatorios, df, df_convert)).start()
+    p_climas = multiprocessing.Process(target=__create_climas, args=(q_climas, df, df_convert))
+    p_relatorio = multiprocessing.Process(target=__create_relatorios, args=(q_relatorios, df, df_convert))
+    
+    p_climas.start()
+    p_relatorio.start()
     
     result:Dict[str, Union[dict,pd.DataFrame]] = {
         "erros" : {},
     }
     
+
     df_final = pd.DataFrame()
     
     # Obtém resultados dos processos

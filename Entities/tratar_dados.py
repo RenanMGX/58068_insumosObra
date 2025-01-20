@@ -20,6 +20,7 @@ class TratarDados:
             List[pd.DataFrame]: Lista de DataFrames resultantes do processamento.
         """
         threads:List[multiprocessing.Queue] = []
+        mp:List[multiprocessing.Process] = []
         
         # Cria processos para tratar cada arquivo na lista
         for file in lista:
@@ -27,6 +28,7 @@ class TratarDados:
             p = multiprocessing.Process(target=tratar, args=(q, tabela_base, file))
             p.start()
             threads.append(q)
+            mp.append(p)
         
         result = [] 
         # Obtém resultados dos processos
@@ -36,6 +38,7 @@ class TratarDados:
                 if errors:
                     print(errors)
             result.append(results.get('df'))
+            
             
         return result
 

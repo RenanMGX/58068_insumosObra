@@ -2,12 +2,12 @@ from Entities.tratar_dados import TratarDados, pd
 from Entities.get_files import FilesPath
 from Entities.dependencies.arguments import Arguments
 import os
-from Entities.dependencies.functions import P
+from Entities.dependencies.functions import P, Functions
 from getpass import getuser
 
 class Execute:
-    converFile_path = f"C:\\Users\\{getuser()}\\PATRIMAR ENGENHARIA S A\\RPA - Documentos\\RPA - Dados\\Relatorios\\Insumos de Obras - Qualidade\\Materiais Aplicados - Conversão.xlsx"
-    finalFile_path = f"C:\\Users\\{getuser()}\\PATRIMAR ENGENHARIA S A\\RPA - Documentos\\RPA - Dados\\Relatorios\\Insumos de Obras - Qualidade"
+    converFile_path = FilesPath.get_covertFile()
+    finalFile_path = FilesPath.get_finalFile_path()
     
     @staticmethod
     def start():
@@ -18,7 +18,17 @@ class Execute:
         
         df = pd.concat(dfs)
         df = df.drop_duplicates()
-        df.to_excel(os.path.join(Execute.finalFile_path, "Relatorio_Final.xlsx"), index=False)
+        
+        final_path = os.path.join(Execute.finalFile_path, "Relatorio_Final.xlsx")
+        Functions.fechar_excel(final_path)
+        
+        for file in os.listdir(Execute.finalFile_path):
+            file = os.path.join(Execute.finalFile_path, file)
+            if os.path.isfile(file):
+                os.remove(file)
+                
+                
+        df.to_excel(final_path, index=False)
         
         print(P("Concluido!"))
     
