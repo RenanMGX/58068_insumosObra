@@ -6,11 +6,17 @@ from Entities.dependencies.functions import P, Functions
 from getpass import getuser
 
 class Execute:
+    # Variável que armazena o caminho do arquivo de conversão
     converFile_path = FilesPath.get_covertFile()
+    # Variável que armazena o caminho final onde será salvo o relatório
     finalFile_path = FilesPath.get_finalFile_path()
     
     @staticmethod
     def start():
+        """
+        Executa o processo principal de tratamento dos arquivos e salva
+        o relatório consolidado no caminho final.
+        """
         if not os.path.exists(Execute.finalFile_path):
             raise FileNotFoundError(f"{Execute.finalFile_path=} não existe!")
         

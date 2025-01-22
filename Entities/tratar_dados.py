@@ -19,7 +19,9 @@ class TratarDados:
         Returns:
             List[pd.DataFrame]: Lista de DataFrames resultantes do processamento.
         """
+        # threads: armazena filas (Queue) para cada processo
         threads:List[multiprocessing.Queue] = []
+        # mp: armazena referencial dos processos iniciados
         mp:List[multiprocessing.Process] = []
         
         # Cria processos para tratar cada arquivo na lista

@@ -38,7 +38,8 @@ class FilesPath:
         return []
     
     @staticmethod
-    def get_covertFile(path:str=os.path.normpath(os.path.join(os.getcwd(), "insumosObras/arquivos/convert"))):        
+    def get_covertFile(path:str=os.path.normpath(os.path.join(os.getcwd(), "insumosObras/arquivos/convert"))):
+        # Verifica no diretório convert se existe arquivo Excel de conversão
         for file in os.listdir(path):
             file = os.path.join(path, file)
             if os.path.isfile(file):
