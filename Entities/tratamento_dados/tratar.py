@@ -13,7 +13,7 @@ multiprocessing.freeze_support()
 locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
 # Lista de sheets válidas que podem ser processadas
-valid_sheets:List[str] = ['Base de Dados']
+valid_sheets:List[str] = ['Sheet1']
 
 # Contador auxiliar para possíveis usos futuros
 count:int = 0
@@ -33,22 +33,24 @@ def __conversor(row:pd.Series, df_medidas:pd.DataFrame, finalidade:str):
     fina = ""
     if finalidade == 'FINALIDADE 2':
         fina = ".1"
-    texto = row['Texto do pedido']
+    texto = row['TxtBreveMaterial']
     result = df_medidas[df_medidas['TxtBreveMaterial'] == texto]
-    coluna_pep = [x for x in row.keys() if "pep" in str(x).lower()][0]
-    centro = str(row[coluna_pep]).split('.')[0]
+    
+    #coluna_pep = [x for x in row.keys() if "pep" in str(x).lower()][0]
+    #centro = str(row[coluna_pep]).split('.')[0]
+    centro = row['Cen.']
     
     if not result.empty:
         new_row = pd.Series()
         
-        new_row['MÊS'] = row['Data de lançamento'].strftime('%B').title()
-        new_row['ANO'] = row['Data de lançamento'].year
+        new_row['MÊS'] = row['Dt.lçto.'].strftime('%B').title()
+        new_row['ANO'] = row['Dt.lçto.'].year
         new_row['CENTRO'] = centro
         new_row['TEXTO'] = texto
         new_row['PARÂMETRO'] = result['PARÂMETRO'].values[0]
         if (result[finalidade].values[0] != '-'):
             if (fator:=result['FATOR DE CONVERSÃO'+fina].values[0]) and (isinstance(result['FATOR DE CONVERSÃO'+fina].values[0], (int, float)) and (str(result['FATOR DE CONVERSÃO'+fina].values[0]) != "nan")): 
-                new_row['QNTD. TOTAL'] = (round(row['Qtd.total entrada'], 4) * fator)
+                new_row['QNTD. TOTAL'] = (round(row['Quantidade'], 4) * fator)
             else:
                 new_row['QNTD. TOTAL'] = "?"
             
@@ -130,9 +132,10 @@ def __exec(base_file, file):
     #     (df['Documento de estorno'] != 'X')
     # ]
     
-    df['abs_Qtd.total entrada'] = df['Qtd.total entrada'].abs()
-    duplicates = df.duplicated(subset=['abs_Qtd.total entrada', 'Número da Nota Fiscal', 'Texto do pedido', 'Elemento PEP', 'Fornecedor'], keep=False)
-    df = df[~duplicates]
+    #df['abs_Quantidade'] = df['Quantidade'].abs()
+    #duplicates = df.duplicated(subset=['abs_Quantidade', 'TxtBreveMaterial', 'Nome 1'], keep=False)
+    #
+    #df = df[~duplicates]
     
     q_climas = multiprocessing.Queue()
     q_relatorios = multiprocessing.Queue()
@@ -145,7 +148,7 @@ def __exec(base_file, file):
     p_relatorio.start()
     
     result:Dict[str, Union[dict,pd.DataFrame]] = {
-        "erros" : {},
+        "error" : {},
     }
     
 
@@ -181,3 +184,8 @@ def tratar(queue:multiprocessing.Queue, base_file, file):
         None
     """
     return queue.put(__exec(base_file, file))
+
+if __name__ == "__main__":
+    pass
+    
+    # print(__exec(FilesPath.get_covertFile(), r'R:\58068 - Insumos de Obra - Qualidade\insumosObras\arquivos\patrimar\Patrimar_Materiais_faturados_01-01-2023_a_31-01-2025 - B.XLSX'))
