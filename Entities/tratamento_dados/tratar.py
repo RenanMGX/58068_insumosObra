@@ -46,6 +46,7 @@ def __conversor(row:pd.Series, df_medidas:pd.DataFrame, finalidade:str):
         new_row['MÊS'] = row['Dt.lçto.'].strftime('%B').title()
         new_row['ANO'] = row['Dt.lçto.'].year
         new_row['CENTRO'] = centro
+        new_row['MATERIAL'] = row['Material']
         new_row['TEXTO'] = texto
         new_row['PARÂMETRO'] = result['PARÂMETRO'].values[0]
         if (result[finalidade].values[0] != '-'):
@@ -75,7 +76,7 @@ def __create_climas(q:multiprocessing.Queue, df:pd.DataFrame, df_convert:pd.Data
     """
     try:
         climas = df.apply(__conversor, axis=1, args=(df_convert,'FINALIDADE 1')).dropna(subset=['MÊS']).astype({'MÊS':str,'ANO':int})
-        climas = climas.groupby(['MÊS', 'ANO', 'CENTRO', 'TEXTO', 'PARÂMETRO', 'UM', 'FINALIDADE'], as_index=False).sum()
+        climas = climas.groupby(['MÊS', 'ANO', 'CENTRO','MATERIAL', 'TEXTO', 'PARÂMETRO', 'UM', 'FINALIDADE'], as_index=False).sum()
         
         return q.put(climas)
     except Exception as e:
@@ -95,7 +96,7 @@ def __create_relatorios(q:multiprocessing.Queue, df:pd.DataFrame, df_convert:pd.
     """
     try:
         relatorios = df.apply(__conversor, axis=1, args=(df_convert,'FINALIDADE 2')).dropna(subset=['MÊS']).astype({'MÊS':str,'ANO':int})
-        relatorios = relatorios.groupby(['MÊS', 'ANO', 'CENTRO', 'TEXTO', 'PARÂMETRO', 'UM', 'FINALIDADE'], as_index=False).sum()
+        relatorios = relatorios.groupby(['MÊS', 'ANO', 'CENTRO', 'MATERIAL', 'TEXTO', 'PARÂMETRO', 'UM', 'FINALIDADE'], as_index=False).sum()
         return q.put(relatorios)
     except Exception as e:
         return q.put(e)
