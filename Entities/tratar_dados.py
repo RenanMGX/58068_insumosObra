@@ -45,5 +45,7 @@ class TratarDados:
         return result
 
 if __name__ == "__main__":
+    from get_files import FilesPath
+    
     # Exemplo de uso da classe TratarDados
-    TratarDados.preprar(lista=["file1", "file2"], tabela_base="base_file")
+    TratarDados.preprar(lista=[r'R:\58068 - Insumos de Obra - Qualidade\insumosObras\arquivos\novolar\Novolar_Materiais_faturados_01-01-2023_a_31-01-2025 - B.XLSX'], tabela_base=FilesPath.get_covertFile())

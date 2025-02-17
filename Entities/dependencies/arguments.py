@@ -35,6 +35,7 @@ class Arguments:
                     Logs().register(status=self.__status, description="Automação concluida com sucesso!")
                 except Exception as error:
                     print(type(error), str(error))
+                    print(traceback.format_exc())
                     Logs().register(status='Error', description=str(error), exception=traceback.format_exc())
             else:
                 print("argumento não existe!")

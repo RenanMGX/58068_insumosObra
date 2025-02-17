@@ -22,6 +22,8 @@ class Execute:
         
         dfs = TratarDados.preprar(lista=FilesPath.get(), tabela_base=Execute.converFile_path)
         
+        #import pdb; pdb.set_trace()
+        
         df = pd.concat(dfs)
         df = df.drop_duplicates()
         

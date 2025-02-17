@@ -21,6 +21,7 @@ class FilesPath:
                 Returns:
                     list: Lista de caminhos para os arquivos encontrados no diretório.
                 """
+                
                 path = os.path.join(base_path, path)
                 if not os.path.exists(path):
                     raise FileNotFoundError(f"{path=} não existe!")
@@ -28,7 +29,7 @@ class FilesPath:
                 for file in os.listdir(path):
                     file = os.path.join(path, file)
                     if os.path.isfile(file):
-                        if file.endswith(('.xlsx','.xls', 'xlsm')):
+                        if file.lower().endswith(('.xlsx','.xls', 'xlsm')):
                             if not os.path.basename(file).startswith("~$"):
                                 result.append(file)
                 return result
@@ -43,7 +44,7 @@ class FilesPath:
         for file in os.listdir(path):
             file = os.path.join(path, file)
             if os.path.isfile(file):
-                if file.endswith(('.xlsx','.xls', 'xlsm')):
+                if file.lower().endswith(('.xlsx','.xls', 'xlsm')):
                     return os.path.normpath(file)
         raise FileNotFoundError(f"Arquivo de conversão não encontrado em {path}!")
     
