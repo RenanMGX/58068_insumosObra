@@ -34,7 +34,11 @@ def __conversor(row:pd.Series, df_medidas:pd.DataFrame, finalidade:str):
     if finalidade == 'FINALIDADE 2':
         fina = ".1"
     texto = row['TxtBreveMaterial']
-    result = df_medidas[df_medidas['TxtBreveMaterial'] == texto]
+    material = int(row['Material'])
+    result = df_medidas[
+        (df_medidas['TxtBreveMaterial'] == texto) &
+        (df_medidas['Material'].astype(str) == str(material))
+        ]
     
     #coluna_pep = [x for x in row.keys() if "pep" in str(x).lower()][0]
     #centro = str(row[coluna_pep]).split('.')[0]
@@ -46,7 +50,7 @@ def __conversor(row:pd.Series, df_medidas:pd.DataFrame, finalidade:str):
         new_row['MÊS'] = row['Dt.lçto.'].strftime('%B').title()
         new_row['ANO'] = row['Dt.lçto.'].year
         new_row['CENTRO'] = centro
-        new_row['MATERIAL'] = row['Material']
+        new_row['MATERIAL'] = material
         new_row['TEXTO'] = texto
         new_row['PARÂMETRO'] = result['PARÂMETRO'].values[0]
         if (result[finalidade].values[0] != '-'):
@@ -59,6 +63,9 @@ def __conversor(row:pd.Series, df_medidas:pd.DataFrame, finalidade:str):
             
             new_row['FINALIDADE'] = result[finalidade].values[0]        
 
+            # if texto == "BRITA 0 GNAISSE A GRANEL":
+            #     print(new_row['MÊS'], new_row['ANO'], new_row['CENTRO'], new_row['MATERIAL'], "|||||||",fator, new_row['QNTD. TOTAL'], row['Quantidade'], result['UM'+fina].values[0])
+                
             return new_row    
     return pd.Series()
 
@@ -166,7 +173,11 @@ def __exec(base_file, file):
     else:
         result['error']['relatorios'] = relatorios
     
-    df_final['QNTD. TOTAL'] = df_final['QNTD. TOTAL'].replace(r'\?+', '?', regex=True)
+    try:
+        df_final['QNTD. TOTAL'] = df_final['QNTD. TOTAL'].replace(r'\?+', '?', regex=True)
+    except Exception as e:
+        pass
+        #print(type(e), e)
     
     result["df"] = df_final
     
