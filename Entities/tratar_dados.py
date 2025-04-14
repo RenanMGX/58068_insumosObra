@@ -1,7 +1,7 @@
 from typing import List
 import locale
 import multiprocessing
-from Entities.tratamento_dados.tratar import tratar, pd
+from tratamento_dados.tratar import tratar, pd
 
 multiprocessing.freeze_support()
 locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')

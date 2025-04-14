@@ -1,12 +1,12 @@
 import pandas as pd
 import openpyxl
 import os
-import numpy as nb
+import numpy as np
 from datetime import datetime
 from typing import Literal, List, Dict, Union
 import locale
 import multiprocessing
-from Entities import exceptions
+import exceptions
 import traceback
 
 multiprocessing.freeze_support()
@@ -34,6 +34,12 @@ def __conversor(row:pd.Series, df_medidas:pd.DataFrame, finalidade:str):
     if finalidade == 'FINALIDADE 2':
         fina = ".1"
     texto = row['TxtBreveMaterial']
+
+    if (texto is np.nan) or (not isinstance(texto, str)):
+        print("Texto inválido:", texto, type(texto))
+        return pd.Series()
+    
+
     material = int(row['Material'])
     result = df_medidas[
         (df_medidas['TxtBreveMaterial'] == texto) &
@@ -145,6 +151,11 @@ def __exec(base_file, file):
     #
     #df = df[~duplicates]
     
+    df = df[
+        ~df['TxtBreveMaterial'].isna()
+    ]
+    
+    
     q_climas = multiprocessing.Queue()
     q_relatorios = multiprocessing.Queue()
     
@@ -179,6 +190,7 @@ def __exec(base_file, file):
         pass
         #print(type(e), e)
     
+    # import pdb; pdb.set_trace()
     result["df"] = df_final
     
     return result
@@ -200,4 +212,8 @@ def tratar(queue:multiprocessing.Queue, base_file, file):
 if __name__ == "__main__":
     pass
     
-    # print(__exec(FilesPath.get_covertFile(), r'R:\58068 - Insumos de Obra - Qualidade\insumosObras\arquivos\patrimar\Patrimar_Materiais_faturados_01-01-2023_a_31-01-2025 - B.XLSX'))
+    print(__exec(
+                r'R:\58068 - Insumos de Obra - Qualidade\insumosObras\arquivos\convert\Materiais Aplicados - Conversão.xlsx',
+                r'R:\58068 - Insumos de Obra - Qualidade\insumosObras\arquivos\novolar\Novolar_Materiais_faturados_01-01-2023_a_31-01-2025 - B.XLSX'
+                 )
+          )

@@ -20,9 +20,11 @@ class Execute:
         if not os.path.exists(Execute.finalFile_path):
             raise FileNotFoundError(f"{Execute.finalFile_path=} não existe!")
         
+        
+        # import pdb; pdb.set_trace()
+        
         dfs = TratarDados.preprar(lista=FilesPath.get(), tabela_base=Execute.converFile_path)
         
-        #import pdb; pdb.set_trace()
         
         df = pd.concat(dfs)
         df = df.drop_duplicates()
