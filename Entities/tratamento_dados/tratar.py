@@ -72,7 +72,28 @@ def __conversor(row:pd.Series, df_medidas:pd.DataFrame, finalidade:str):
             # if texto == "BRITA 0 GNAISSE A GRANEL":
             #     print(new_row['MÊS'], new_row['ANO'], new_row['CENTRO'], new_row['MATERIAL'], "|||||||",fator, new_row['QNTD. TOTAL'], row['Quantidade'], result['UM'+fina].values[0])
                 
-            return new_row    
+            return new_row
+    else:
+        new_row = pd.Series()
+        
+        new_row['MÊS'] = row['Dt.lçto.'].strftime('%B').title()
+        new_row['ANO'] = row['Dt.lçto.'].year
+        new_row['CENTRO'] = centro
+        new_row['MATERIAL'] = material
+        new_row['TEXTO'] = texto
+        new_row['PARÂMETRO'] = "?"
+        new_row['QNTD. TOTAL'] = "?"
+            
+        new_row['UM'] = row['UMP']
+            
+        new_row['FINALIDADE'] = "?"       
+
+            # if texto == "BRITA 0 GNAISSE A GRANEL":
+            #     print(new_row['MÊS'], new_row['ANO'], new_row['CENTRO'], new_row['MATERIAL'], "|||||||",fator, new_row['QNTD. TOTAL'], row['Quantidade'], result['UM'+fina].values[0])
+                
+        return new_row
+        
+        
     return pd.Series()
 
 def __create_climas(q:multiprocessing.Queue, df:pd.DataFrame, df_convert:pd.DataFrame):
