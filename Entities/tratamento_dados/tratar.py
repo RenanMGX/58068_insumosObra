@@ -13,7 +13,7 @@ multiprocessing.freeze_support()
 locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
 
 # Lista de sheets válidas que podem ser processadas
-valid_sheets:List[str] = ['Sheet1']
+valid_sheets:List[str] = ['Base de Dados']
 
 # Contador auxiliar para possíveis usos futuros
 count:int = 0
