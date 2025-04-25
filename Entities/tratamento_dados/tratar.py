@@ -34,23 +34,40 @@ def __conversor(row:pd.Series, df_medidas:pd.DataFrame, finalidade:str):
     if finalidade == 'FINALIDADE 2':
         fina = ".1"
     texto = row['TxtBreveMaterial']
+    centro = row['Cen.']
 
     if (texto is np.nan) or (not isinstance(texto, str)):
         print("Texto inválido:", texto, type(texto))
         return pd.Series()
     
-
     material = int(row['Material'])
+
     result = df_medidas[
-        (df_medidas['TxtBreveMaterial'] == texto) &
-        (df_medidas['Material'].astype(str) == str(material))
+        df_medidas['TxtBreveMaterial'] == texto
         ]
     
-    #coluna_pep = [x for x in row.keys() if "pep" in str(x).lower()][0]
-    #centro = str(row[coluna_pep]).split('.')[0]
-    centro = row['Cen.']
+    if (not result.empty):
+        result = result[
+            (result['UMB'].astype(str).str.lower() == str(row['UMP']).lower()) #|
+            #(result['Material'].astype(int).astype(str) == str(material))
+        ]
+            
+        if result.empty:
+            new_row = pd.Series()
+            
+            new_row['MÊS'] = row['Dt.lçto.'].strftime('%B').title()
+            new_row['ANO'] = row['Dt.lçto.'].year
+            new_row['CENTRO'] = centro
+            new_row['MATERIAL'] = material
+            new_row['TEXTO'] = texto
+            new_row['PARÂMETRO'] = "?"
+            new_row['QNTD. TOTAL'] = "?"
+            new_row['UM'] = row['UMP']
+            new_row['FINALIDADE'] = "?" 
+            
+            return new_row
     
-    if not result.empty:
+    if not result.empty:                       
         new_row = pd.Series()
         
         new_row['MÊS'] = row['Dt.lçto.'].strftime('%B').title()
@@ -69,31 +86,8 @@ def __conversor(row:pd.Series, df_medidas:pd.DataFrame, finalidade:str):
             
             new_row['FINALIDADE'] = result[finalidade].values[0]        
 
-            # if texto == "BRITA 0 GNAISSE A GRANEL":
-            #     print(new_row['MÊS'], new_row['ANO'], new_row['CENTRO'], new_row['MATERIAL'], "|||||||",fator, new_row['QNTD. TOTAL'], row['Quantidade'], result['UM'+fina].values[0])
-                
             return new_row
-    else:
-        new_row = pd.Series()
-        
-        new_row['MÊS'] = row['Dt.lçto.'].strftime('%B').title()
-        new_row['ANO'] = row['Dt.lçto.'].year
-        new_row['CENTRO'] = centro
-        new_row['MATERIAL'] = material
-        new_row['TEXTO'] = texto
-        new_row['PARÂMETRO'] = "?"
-        new_row['QNTD. TOTAL'] = "?"
-            
-        new_row['UM'] = row['UMP']
-            
-        new_row['FINALIDADE'] = "?"       
-
-            # if texto == "BRITA 0 GNAISSE A GRANEL":
-            #     print(new_row['MÊS'], new_row['ANO'], new_row['CENTRO'], new_row['MATERIAL'], "|||||||",fator, new_row['QNTD. TOTAL'], row['Quantidade'], result['UM'+fina].values[0])
-                
-        return new_row
-        
-        
+    
     return pd.Series()
 
 def __create_climas(q:multiprocessing.Queue, df:pd.DataFrame, df_convert:pd.DataFrame):
@@ -158,6 +152,9 @@ def __exec(base_file, file):
     sheet_convert = "CONVERSÃO MATERIAIS APLIC."
     try:
         df_convert = pd.read_excel(base_file, sheet_name=sheet_convert)
+        df_convert = df_convert[
+            ~df_convert['Material'].isna()
+        ]
     except:
         return exceptions.SheetNotFoundError(f"a sheet {sheet_convert} não foi encontrada na planilha de conversão!")
     
