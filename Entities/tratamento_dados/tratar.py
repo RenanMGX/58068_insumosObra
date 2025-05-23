@@ -45,10 +45,10 @@ def __conversor(row:pd.Series, df_medidas:pd.DataFrame, finalidade:str):
     result = df_medidas[
         df_medidas['TxtBreveMaterial'] == texto
         ]
-    
+            
     if (not result.empty):
         result = result[
-            (result['UMB'].astype(str).str.lower() == str(row['UMP']).lower()) #|
+            (result['UMB'].astype(str).str.lower().str.strip() == str(row['UMP']).lower().strip()) #|
             #(result['Material'].astype(int).astype(str) == str(material))
         ]
             
@@ -230,8 +230,9 @@ def tratar(queue:multiprocessing.Queue, base_file, file):
 if __name__ == "__main__":
     pass
     
-    print(__exec(
+    df = __exec(
                 r'R:\58068 - Insumos de Obra - Qualidade\insumosObras\arquivos\convert\Materiais Aplicados - Conversão.xlsx',
-                r'R:\58068 - Insumos de Obra - Qualidade\insumosObras\arquivos\novolar\Novolar_Materiais_faturados_01-01-2023_a_31-01-2025 - B.XLSX'
+                r'R:\58068 - Insumos de Obra - Qualidade\insumosObras\arquivos\novolar\Novolar_Materiais_faturados_01-01-2023_a_31-01-2025 - B (1).XLSX'
                  )
-          )
+    
+    import pdb; pdb.set_trace()
